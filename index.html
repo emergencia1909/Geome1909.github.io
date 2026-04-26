@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometría Analítica</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ffffff;
+  --surface: #f9f9f7;
+  --surface2: #f2f2ee;
+  --border: #e8e8e4;
+  --text: #1a1a16;
+  --text-muted: #8a8a7a;
+  --text-faint: #b8b8a8;
+  --accent: #2d5be3;
+  --accent-light: #eef1fd;
+  --error: #c0392b;
+  --success: #1a6b3a;
+  --point-a: #2d5be3;
+  --point-b: #c0392b;
+  --point-c: #1a6b3a;
+}
+
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 36px 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+header h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: 20px;
+  letter-spacing: -0.4px;
+}
+header span {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+.author-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 0.15s;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+}
+.author-link:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+nav {
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px;
+  display: flex;
+}
+.tab {
+  padding: 10px 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+main {
+  display: grid;
+  grid-template-columns: 368px 1fr;
+  height: calc(100vh - 143px);
+}
+
+/* ── LEFT PANEL ── */
+.panel-left {
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+.panel-left::-webkit-scrollbar { width: 3px; }
+.panel-left::-webkit-scrollbar-thumb { background: var(--border); }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.tbl-head {
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tbl-head h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: 14px;
+}
+.hint {
+  margin-top: 5px;
+  font-size: 10px;
+  color: var(--text-faint);
+  line-height: 1.8;
+}
+.hint code {
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+}
+
+.coord-table { width: 100%; border-collapse: collapse; }
+.coord-table th {
+  background: var(--surface);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 6px 14px;
+  text-align: left;
+  font-weight: 400;
+  border-bottom: 1px solid var(--border);
+}
+.coord-table td {
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+}
+.point-label {
+  width: 28px;
+  text-align: center;
+  font-size: 11px;
+  border-right: 1px solid var(--border);
+  padding: 9px 6px;
+  vertical-align: middle;
+  color: var(--text-muted);
+}
+.point-label.A { color: var(--point-a); font-weight: 500; }
+.point-label.B { color: var(--point-b); font-weight: 500; }
+.point-label.C { color: var(--point-c); font-weight: 500; }
+
+.coord-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  padding: 9px 10px;
+  background: transparent;
+  color: var(--text);
+  transition: background 0.1s;
+}
+.coord-input:focus { background: var(--accent-light); }
+.coord-input.invalid { color: var(--error); background: #fff6f6; }
+
+/* ── RESULTS ── */
+.result-box {
+  margin: 14px 18px 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.result-row:last-child { border-bottom: none; }
+.result-row.hl { background: var(--accent-light); }
+.result-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.result-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  font-family: 'Fraunces', serif;
+  text-align: right;
+}
+.result-value.accent { color: var(--accent); }
+.sym-val { display:flex; flex-direction:column; align-items:flex-end; gap:1px; }
+.sym-val .sym { font-size:10.5px; color:var(--text-muted); font-family:'DM Mono',monospace; }
+.sym-val .dec { font-size:13px; font-family:'Fraunces',serif; font-weight:500; }
+.sym-val .dec.accent { color:var(--accent); }
+
+/* ── SYMBOL BAR ── */
+.sym-bar {
+  border-bottom: 1px solid var(--border);
+  padding: 6px 36px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+}
+.sym-bar-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.sym-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.12s, color 0.12s;
+  line-height: 1.4;
+  user-select: none;
+}
+.sym-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.sym-btn:active { transform: scale(0.94); }
+
+.badge {
+  display:inline-block; padding:3px 10px;
+  font-size:10px; letter-spacing:0.07em; text-transform:uppercase;
+  border-radius:100px; font-weight:500; font-family:'DM Mono',monospace;
+}
+.badge.yes  { background:#e6f4ec; color:var(--success); }
+.badge.no   { background:#fdecea; color:var(--error); }
+.badge.info { background:#eef1fd; color:var(--accent); }
+
+/* ── PROCESS ── */
+.proc-toggle {
+  margin: 12px 18px 0;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px 2px 0 0;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: background 0.1s;
+}
+.proc-toggle:hover { background: var(--surface2); }
+.proc-toggle .arrow { transition: transform 0.2s; display:inline-block; }
+.proc-toggle.open .arrow { transform: rotate(90deg); }
+.proc-toggle.closed + .proc-panel { display:none; }
+
+.proc-panel {
+  margin: 0 18px 0;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.step {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.step:last-child { border-bottom: none; }
+.step-hd {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.step-num {
+  width:16px; height:16px; border-radius:50%;
+  background: var(--border); color:var(--text-muted);
+  font-size:9px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.step-body { font-size:11.5px; line-height:2.1; }
+.step-body .ln { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px; }
+.step-body .lbl { color:var(--text); min-width:110px; }
+.step-body .eq { color:var(--text-faint); }
+.step-body .val { color:var(--accent); font-weight:500; }
+.step-body .dim { color:var(--text-muted); font-size:10px; }
+.step-body .fin { color:var(--accent); font-size:14px; font-family:'Fraunces',serif; font-weight:500; }
+.step-body .verdict-yes { color:var(--success); font-weight:500; }
+.step-body .verdict-no  { color:var(--error);   font-weight:500; }
+.step-body .spc { height:6px; }
+
+/* formula */
+.formula-box {
+  margin: 12px 18px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  font-size:10.5px; color:var(--text-muted);
+  line-height:1.9; font-style:italic;
+}
+.formula-box strong { font-style:normal; color:var(--text); font-weight:500; }
+
+/* ── RIGHT PANEL ── */
+.panel-right {
+  display: flex;
+  flex-direction: column;
+}
+.graph-hd {
+  padding: 11px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.graph-title {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.graph-legend { display:flex; gap:14px; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-muted); }
+.legend-dot  { width:6px; height:6px; border-radius:50%; }
+canvas { flex:1; width:100%; display:block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Geometría Analítica</h1>
+  <span>Distancia · Perímetro · Triángulos</span>
+  <div class="header-right">
+    <a class="author-link" href="https://www.instagram.com/dhg1909" target="_blank" rel="noopener">dhg1909</a>
+  </div>
+</header>
+
+<!-- BARRA DE SÍMBOLOS -->
+<div class="sym-bar">
+  <span class="sym-bar-label">Insertar</span>
+  <button class="sym-btn" onclick="insertSym('√')" title="Raíz cuadrada">√</button>
+  <button class="sym-btn" onclick="insertSym('/')" title="División / fracción">/</button>
+  <button class="sym-btn" onclick="insertSym('(')" title="Paréntesis apertura">(</button>
+  <button class="sym-btn" onclick="insertSym(')')" title="Paréntesis cierre">)</button>
+</div>
+
+<nav>
+  <button class="tab active" onclick="switchTab('distancia')">01 · Distancia</button>
+  <button class="tab"        onclick="switchTab('perimetro')">02 · Perímetro</button>
+  <button class="tab"        onclick="switchTab('isoceles')">03 · Isósceles</button>
+  <button class="tab"        onclick="switchTab('equilatero')">04 · Equilátero</button>
+  <button class="tab"        onclick="switchTab('escaleno')">05 · Escaleno</button>
+</nav>
+
+<main>
+<!-- ══════ LEFT ══════ -->
+<div class="panel-left">
+
+<!-- TAB 1 -->
+<div class="section active" id="sec-distancia">
+  <div class="tbl-head">
+    <h2>Distancia entre dos puntos</h2>
+    <p class="hint">Formatos: <code>-3√5</code> &nbsp;·&nbsp; <code>1/4</code> &nbsp;·&nbsp; <code>(√3)/4</code> &nbsp;·&nbsp; <code>-(√3)/4</code> &nbsp;·&nbsp; <code>(-√5)/2</code> &nbsp;·&nbsp; <code>3.5</code></p>
+  </div>
+  <table class="coord-table">
+    <thead><tr><th></th><th>x</th><th>y</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="point-label A">A</td>
+        <td><input class="coord-input" id="d_ax" value="-3√5"  oninput="calcDistancia()"></td>
+        <td><input class="coord-input" id="d_ay" value="1/4"   oninput="calcDistancia()"></td>
+      </tr>
+      <tr>
+        <td class="point-label B">B</td>
+        <td><input class="coord-input" id="d_bx" value="-9√5"  oninput="calcDistancia()"></td>
+        <td><input class="coord-input" id="d_by" value="5/4"   oninput="calcDistancia()"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="result-box">
+    <div class="result-row">
+      <span class="result-label">A</span>
+      <div class="sym-val">
+        <span class="sym" id="d_sym_a"></span>
+        <span class="dec" id="d_dec_a"></span>
+      </div>
+    </div>
+    <div class="result-row">
+      <span class="result-label">B</span>
+      <div class="sym-val">
+        <span class="sym" id="d_sym_b"></span>
+        <span class="dec" id="d_dec_b"></span>
+      </div>
+    </div>
+    <div class="result-row hl">
+      <span class="result-label">Distancia AB</span>
+      <span class="result-value accent" id="d_res">—</span>
+    </div>
+  </div>
+
+  <div class="proc-toggle closed" id="tog-d" onclick="toggleProc('d')">
+    <span>Proceso paso a paso</span><span class="arrow">›</span>
+  </div>
+  <div class="proc-panel" id="proc-d"></div>
+
+  <div class="formula-box">
+    <strong>Fórmula:</strong><br>
+    d(A,B) = √ [ (x₂ − x₁)² + (y₂ − y₁)² ]
+  </div>
+</div>
+
+<!-- TAB 2 -->
+<div class="section" id="sec-perimetro">
+  <div class="tbl-head">
+    <h2>Perímetro del triángulo</h2>
+    <p class="hint">Formatos: <code>-3√5</code> &nbsp;·&nbsp; <code>1/4</code> &nbsp;·&nbsp; <code>(√3)/4</code> &nbsp;·&nbsp; <code>-(√3)/4</code> &nbsp;·&nbsp; <code>3.5</code></p>
+  </div>
+  <table class="coord-table">
+    <thead><tr><th></th><th>x</th><th>y</th></tr></thead>
+    <tbody>
+      <tr><td class="point-label A">A</td><td><input class="coord-input" id="p_ax" value="0" oninput="calcPerimetro()"></td><td><input class="coord-input" id="p_ay" value="0" oninput="calcPerimetro()"></td></tr>
+      <tr><td class="point-label B">B</td><td><input class="coord-input" id="p_bx" value="6" oninput="calcPerimetro()"></td><td><input class="coord-input" id="p_by" value="0" oninput="calcPerimetro()"></td></tr>
+      <tr><td class="point-label C">C</td><td><input class="coord-input" id="p_cx" value="3" oninput="calcPerimetro()"></td><td><input class="coord-input" id="p_cy" value="5" oninput="calcPerimetro()"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="result-box">
+    <div class="result-row"><span class="result-label">Lado AB</span><div class="sym-val"><span class="sym" id="p_sym_ab"></span><span class="dec" id="p_ab">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado BC</span><div class="sym-val"><span class="sym" id="p_sym_bc"></span><span class="dec" id="p_bc">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado CA</span><div class="sym-val"><span class="sym" id="p_sym_ca"></span><span class="dec" id="p_ca">—</span></div></div>
+    <div class="result-row hl"><span class="result-label">Perímetro</span><span class="result-value accent" id="p_res">—</span></div>
+  </div>
+
+  <div class="proc-toggle closed" id="tog-p" onclick="toggleProc('p')">
+    <span>Proceso paso a paso</span><span class="arrow">›</span>
+  </div>
+  <div class="proc-panel" id="proc-p"></div>
+
+  <div class="formula-box">
+    <strong>Lados:</strong><br>
+    d = √ [(Δx)² + (Δy)²]<br>
+    <strong>P = AB + BC + CA</strong>
+  </div>
+</div>
+
+<!-- TAB 3 -->
+<div class="section" id="sec-isoceles">
+  <div class="tbl-head">
+    <h2>Verificación isósceles</h2>
+    <p class="hint">Formatos: <code>-3√5</code> &nbsp;·&nbsp; <code>1/4</code> &nbsp;·&nbsp; <code>(√3)/4</code> &nbsp;·&nbsp; <code>-(√3)/4</code> &nbsp;·&nbsp; <code>3.5</code></p>
+  </div>
+  <table class="coord-table">
+    <thead><tr><th></th><th>x</th><th>y</th></tr></thead>
+    <tbody>
+      <tr><td class="point-label A">A</td><td><input class="coord-input" id="i_ax" value="0" oninput="calcIsoceles()"></td><td><input class="coord-input" id="i_ay" value="0" oninput="calcIsoceles()"></td></tr>
+      <tr><td class="point-label B">B</td><td><input class="coord-input" id="i_bx" value="4" oninput="calcIsoceles()"></td><td><input class="coord-input" id="i_by" value="0" oninput="calcIsoceles()"></td></tr>
+      <tr><td class="point-label C">C</td><td><input class="coord-input" id="i_cx" value="2" oninput="calcIsoceles()"></td><td><input class="coord-input" id="i_cy" value="4" oninput="calcIsoceles()"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="result-box">
+    <div class="result-row"><span class="result-label">Lado AB</span><div class="sym-val"><span class="sym" id="i_sym_ab"></span><span class="dec" id="i_ab">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado BC</span><div class="sym-val"><span class="sym" id="i_sym_bc"></span><span class="dec" id="i_bc">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado CA</span><div class="sym-val"><span class="sym" id="i_sym_ca"></span><span class="dec" id="i_ca">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lados iguales</span><span class="result-value" id="i_iguales" style="font-size:11px;text-align:right">—</span></div>
+    <div class="result-row hl"><span class="result-label">¿Es isósceles?</span><span class="result-value" id="i_res">—</span></div>
+  </div>
+
+  <div class="proc-toggle closed" id="tog-i" onclick="toggleProc('i')">
+    <span>Proceso paso a paso</span><span class="arrow">›</span>
+  </div>
+  <div class="proc-panel" id="proc-i"></div>
+
+  <div class="formula-box">
+    <strong>Condición:</strong><br>
+    AB = BC &nbsp;ó&nbsp; BC = CA &nbsp;ó&nbsp; CA = AB
+  </div>
+</div>
+
+<!-- TAB 4 — EQUILÁTERO -->
+<div class="section" id="sec-equilatero">
+  <div class="tbl-head">
+    <h2>Verificación equilátero</h2>
+    <p class="hint">Formatos: <code>-3√5</code> &nbsp;·&nbsp; <code>1/4</code> &nbsp;·&nbsp; <code>(√3)/4</code> &nbsp;·&nbsp; <code>-(√3)/4</code> &nbsp;·&nbsp; <code>3.5</code></p>
+  </div>
+  <table class="coord-table">
+    <thead><tr><th></th><th>x</th><th>y</th></tr></thead>
+    <tbody>
+      <tr><td class="point-label A">A</td><td><input class="coord-input" id="eq_ax" value="0"  oninput="calcEquilatero()"></td><td><input class="coord-input" id="eq_ay" value="0"  oninput="calcEquilatero()"></td></tr>
+      <tr><td class="point-label B">B</td><td><input class="coord-input" id="eq_bx" value="2"  oninput="calcEquilatero()"></td><td><input class="coord-input" id="eq_by" value="0"  oninput="calcEquilatero()"></td></tr>
+      <tr><td class="point-label C">C</td><td><input class="coord-input" id="eq_cx" value="1"  oninput="calcEquilatero()"></td><td><input class="coord-input" id="eq_cy" value="√3" oninput="calcEquilatero()"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="result-box">
+    <div class="result-row"><span class="result-label">Lado AB</span><div class="sym-val"><span class="sym" id="eq_sym_ab"></span><span class="dec" id="eq_ab">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado BC</span><div class="sym-val"><span class="sym" id="eq_sym_bc"></span><span class="dec" id="eq_bc">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado CA</span><div class="sym-val"><span class="sym" id="eq_sym_ca"></span><span class="dec" id="eq_ca">—</span></div></div>
+    <div class="result-row hl"><span class="result-label">¿Es equilátero?</span><span class="result-value" id="eq_res">—</span></div>
+  </div>
+
+  <div class="proc-toggle closed" id="tog-eq" onclick="toggleProc('eq')">
+    <span>Proceso paso a paso</span><span class="arrow">›</span>
+  </div>
+  <div class="proc-panel" id="proc-eq"></div>
+
+  <div class="formula-box">
+    <strong>Condición:</strong><br>
+    AB = BC = CA &nbsp;(los tres lados iguales)
+  </div>
+</div>
+
+<!-- TAB 5 — ESCALENO -->
+<div class="section" id="sec-escaleno">
+  <div class="tbl-head">
+    <h2>Verificación escaleno</h2>
+    <p class="hint">Formatos: <code>-3√5</code> &nbsp;·&nbsp; <code>1/4</code> &nbsp;·&nbsp; <code>(√3)/4</code> &nbsp;·&nbsp; <code>-(√3)/4</code> &nbsp;·&nbsp; <code>3.5</code></p>
+  </div>
+  <table class="coord-table">
+    <thead><tr><th></th><th>x</th><th>y</th></tr></thead>
+    <tbody>
+      <tr><td class="point-label A">A</td><td><input class="coord-input" id="es_ax" value="0" oninput="calcEscaleno()"></td><td><input class="coord-input" id="es_ay" value="0" oninput="calcEscaleno()"></td></tr>
+      <tr><td class="point-label B">B</td><td><input class="coord-input" id="es_bx" value="5" oninput="calcEscaleno()"></td><td><input class="coord-input" id="es_by" value="0" oninput="calcEscaleno()"></td></tr>
+      <tr><td class="point-label C">C</td><td><input class="coord-input" id="es_cx" value="2" oninput="calcEscaleno()"></td><td><input class="coord-input" id="es_cy" value="4" oninput="calcEscaleno()"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="result-box">
+    <div class="result-row"><span class="result-label">Lado AB</span><div class="sym-val"><span class="sym" id="es_sym_ab"></span><span class="dec" id="es_ab">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado BC</span><div class="sym-val"><span class="sym" id="es_sym_bc"></span><span class="dec" id="es_bc">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lado CA</span><div class="sym-val"><span class="sym" id="es_sym_ca"></span><span class="dec" id="es_ca">—</span></div></div>
+    <div class="result-row"><span class="result-label">Lados distintos</span><span class="result-value" id="es_distintos" style="font-size:11px;text-align:right">—</span></div>
+    <div class="result-row hl"><span class="result-label">¿Es escaleno?</span><span class="result-value" id="es_res">—</span></div>
+  </div>
+
+  <div class="proc-toggle closed" id="tog-es" onclick="toggleProc('es')">
+    <span>Proceso paso a paso</span><span class="arrow">›</span>
+  </div>
+  <div class="proc-panel" id="proc-es"></div>
+
+  <div class="formula-box">
+    <strong>Condición:</strong><br>
+    AB ≠ BC &nbsp;y&nbsp; BC ≠ CA &nbsp;y&nbsp; CA ≠ AB<br>
+    (los tres lados distintos entre sí)
+  </div>
+</div>
+
+</div><!-- /panel-left -->
+
+<!-- ══════ RIGHT ══════ -->
+<div class="panel-right">
+  <div class="graph-hd">
+    <span class="graph-title">Plano cartesiano</span>
+    <div class="graph-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--point-a)"></div>A</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--point-b)"></div>B</div>
+      <div class="legend-item legend-c" style="display:none"><div class="legend-dot" style="background:var(--point-c)"></div>C</div>
+    </div>
+  </div>
+  <canvas id="cv"></canvas>
+</div>
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  PARSER — acepta: número, fracción, raíz cuadrada, combinaciones
+//  Soporta paréntesis: (√3)/4  -(√3)/4  (-√5)/2  (-(√3)/4)  etc.
+// ══════════════════════════════════════════════════════════════
+function parse(raw) {
+  if (!raw && raw !== 0) return null;
+  // Normalizar: quitar espacios, unificar √
+  let s = String(raw).trim().replace(/\s+/g,'');
+  if (s === '' || s === '-' || s === '+') return null;
+
+  // Quitar paréntesis externos si envuelven toda la expresión
+  // Ej: (-(√3)/4) → -(√3)/4
+  function stripOuterParens(str) {
+    let t = str;
+    while (t.startsWith('(') && t.endsWith(')')) {
+      // Verificar que el paren de apertura cierra al final
+      let depth = 0, valid = true;
+      for (let i = 0; i < t.length - 1; i++) {
+        if (t[i] === '(') depth++;
+        else if (t[i] === ')') { depth--; if (depth === 0) { valid = false; break; } }
+      }
+      if (valid) t = t.slice(1, -1);
+      else break;
+    }
+    return t;
+  }
+
+  s = stripOuterParens(s);
+
+  // Extraer el valor numérico de una expresión √ (con o sin paréntesis)
+  // Ej: √3  √(3)  (√3)  (-√3)  -(√3)
+  // Devuelve el valor o null si no coincide
+  function parseSqrtAtom(str) {
+    // Puro √n
+    let m = str.match(/^([+-]?)√(\d+(?:\.\d+)?)$/);
+    if (m) {
+      const sign = m[1] === '-' ? -1 : 1;
+      return sign * Math.sqrt(+m[2]);
+    }
+    // √n entre paréntesis opcionales con signo externo: ±(√n)
+    m = str.match(/^([+-]?)\(√(\d+(?:\.\d+)?)\)$/);
+    if (m) {
+      const sign = m[1] === '-' ? -1 : 1;
+      return sign * Math.sqrt(+m[2]);
+    }
+    // (-√n) con paréntesis
+    m = str.match(/^\((-?)√(\d+(?:\.\d+)?)\)$/);
+    if (m) {
+      const sign = m[1] === '-' ? -1 : 1;
+      return sign * Math.sqrt(+m[2]);
+    }
+    return null;
+  }
+
+  // ── 1. Número plano
+  let m = s.match(/^[+-]?\d+(?:\.\d+)?$/);
+  if (m) { const n = +s; return isNaN(n) ? null : { v: n, sym: s }; }
+
+  // ── 2. Fracción simple: ±a/b
+  m = s.match(/^([+-]?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);
+  if (m) {
+    const d = +m[2]; if (!d) return null;
+    return { v: +m[1]/d, sym: s };
+  }
+
+  // ── 3. Solo raíz (con o sin paréntesis): ±√n  ±(√n)  (-√n)
+  {
+    const sqv = parseSqrtAtom(s);
+    if (sqv !== null) return { v: sqv, sym: s };
+  }
+
+  // ── 4. Coeficiente entero × √:  ±a√b  (forma sin paréntesis)
+  m = s.match(/^([+-]?\d*(?:\.\d+)?)√(\d+(?:\.\d+)?)$/);
+  if (m) {
+    let c = m[1];
+    if (c===''||c==='+') c=1; else if (c==='-') c=-1; else c=+c;
+    return { v: c*Math.sqrt(+m[2]), sym: s };
+  }
+
+  // ── 5. Fracción con √ en numerador: ±(√n)/d  ±(-√n)/d  (√n)/d  (-√n)/d
+  //    Ej: (√3)/4   -(√3)/4   (-√5)/2   (-(√3))/4
+  m = s.match(/^([+-]?)\((-?)√(\d+(?:\.\d+)?)\)\/(\d+(?:\.\d+)?)$/);
+  if (m) {
+    const outerSign = m[1] === '-' ? -1 : 1;
+    const innerSign = m[2] === '-' ? -1 : 1;
+    const d = +m[4]; if (!d) return null;
+    return { v: outerSign * innerSign * Math.sqrt(+m[3]) / d, sym: s };
+  }
+
+  // ── 6. Fracción con coef entero × √ en numerador: ±a√b/c  ±(a√b)/c
+  //    Ej: 3√5/2   -3√5/4   (3√5)/2
+  m = s.match(/^([+-]?\d+(?:\.\d+)?)√(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);
+  if (m) {
+    const d = +m[3]; if (!d) return null;
+    return { v: +m[1]*Math.sqrt(+m[2])/d, sym: s };
+  }
+  m = s.match(/^([+-]?)\((\d+(?:\.\d+)?)√(\d+(?:\.\d+)?)\)\/(\d+(?:\.\d+)?)$/);
+  if (m) {
+    const outerSign = m[1] === '-' ? -1 : 1;
+    const d = +m[4]; if (!d) return null;
+    return { v: outerSign * +m[2]*Math.sqrt(+m[3])/d, sym: s };
+  }
+
+  // ── 7. Fracción entera con √: ±a/b√c  (coef fraccionario × raíz)
+  m = s.match(/^([+-]?\d+)\/(\d+)√(\d+(?:\.\d+)?)$/);
+  if (m) {
+    const d = +m[2]; if (!d) return null;
+    return { v: (+m[1]/d)*Math.sqrt(+m[3]), sym: s };
+  }
+
+  // ── 8. Expresión entre paréntesis con fracción dentro: (±a/b)  (±a/b√c)
+  m = s.match(/^\(([^)]+)\)$/);
+  if (m) {
+    const inner = parse(m[1]);
+    if (inner) return { v: inner.v, sym: s };
+  }
+
+  // ── 9. Signo externo × paréntesis con fracción: -(a/b)  +(a/b)
+  m = s.match(/^([+-])\(([^)]+)\)$/);
+  if (m) {
+    const sign = m[1] === '-' ? -1 : 1;
+    const inner = parse(m[2]);
+    if (inner) return { v: sign * inner.v, sym: s };
+  }
+
+  return null;
+}
+
+// Formato decimal: 4 posiciones, sin ceros superfluos al final
+function fd(n, p=4) {
+  if (n==null||isNaN(n)) return '—';
+  let s = n.toFixed(p);
+  // quitar trailing zeros pero conservar al menos 2 decimales
+  s = s.replace(/(\.\d{2,}?)0+$/, '$1');
+  return s;
+}
+
+function fmtAxis(n) {
+  const s = n.toFixed(2).replace(/\.?0+$/,'');
+  return s || '0';
+}
+
+// Leer input con validación visual
+function ri(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const p = parse(el.value);
+  el.classList.toggle('invalid', el.value.trim()!=='' && p===null);
+  return p;
+}
+
+function dist(x1,y1,x2,y2){ return Math.sqrt((x2-x1)**2+(y2-y1)**2); }
+
+// ══════════════════════════════════════════════════════════════
+//  FOCUSED INPUT TRACKING (para botones de símbolo)
+// ══════════════════════════════════════════════════════════════
+let lastFocused = null;
+document.addEventListener('focusin', e => {
+  if (e.target.classList.contains('coord-input')) lastFocused = e.target;
+});
+
+function insertSym(char) {
+  const el = lastFocused;
+  if (!el) return;
+  const s = el.selectionStart, e2 = el.selectionEnd;
+  el.value = el.value.slice(0,s) + char + el.value.slice(e2);
+  el.setSelectionRange(s+char.length, s+char.length);
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════════
+const ALL_TABS = ['distancia','perimetro','isoceles','equilatero','escaleno'];
+let tab = 'distancia';
+function switchTab(name) {
+  tab = name;
+  document.querySelectorAll('.tab').forEach((t,i)=>
+    t.classList.toggle('active', ALL_TABS[i]===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelector('.legend-c').style.display = name==='distancia'?'none':'flex';
+  drawGraph();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PROCESO TOGGLE
+// ══════════════════════════════════════════════════════════════
+function toggleProc(k) {
+  const tog = document.getElementById('tog-'+k);
+  const open = tog.classList.toggle('open');
+  tog.classList.toggle('closed', !open);
+  const pan = document.getElementById('proc-'+k);
+  pan.style.display = open ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HTML HELPERS PARA PROCESO
+// ══════════════════════════════════════════════════════════════
+const step = (n,title,body) =>
+  `<div class="step"><div class="step-hd"><span class="step-num">${n}</span>${title}</div><div class="step-body">${body}</div></div>`;
+
+const ln = (lbl, eq, val, dim='') =>
+  `<div class="ln"><span class="lbl">${lbl}</span><span class="eq">${eq}</span><span class="val">${val}</span>${dim?`<span class="dim">(${dim})</span>`:''}</div>`;
+
+// ══════════════════════════════════════════════════════════════
+//  PROCESO DISTANCIA
+// ══════════════════════════════════════════════════════════════
+function procDist(ax,ay,bx,by){
+  const dx=bx.v-ax.v, dy=by.v-ay.v;
+  const dx2=dx*dx, dy2=dy*dy, sum=dx2+dy2, d=Math.sqrt(sum);
+
+  return [
+    step(1,'Identificar coordenadas',
+      ln('x₁',  '=', ax.sym, `≈ ${fd(ax.v)}`) +
+      ln('y₁',  '=', ay.sym, `≈ ${fd(ay.v)}`) +
+      ln('x₂',  '=', bx.sym, `≈ ${fd(bx.v)}`) +
+      ln('y₂',  '=', by.sym, `≈ ${fd(by.v)}`)
+    ),
+    step(2,'Diferencias Δx y Δy',
+      ln('Δx = x₂ − x₁', '=', `${fd(bx.v)} − (${fd(ax.v)})`, `= ${fd(dx)}`) +
+      ln('Δy = y₂ − y₁', '=', `${fd(by.v)} − (${fd(ay.v)})`, `= ${fd(dy)}`)
+    ),
+    step(3,'Elevar al cuadrado',
+      ln('(Δx)²', '=', `(${fd(dx)})²`, `= ${fd(dx2)}`) +
+      ln('(Δy)²', '=', `(${fd(dy)})²`, `= ${fd(dy2)}`)
+    ),
+    step(4,'Sumar y aplicar raíz cuadrada',
+      ln('(Δx)²+(Δy)²', '=', `${fd(dx2)} + ${fd(dy2)}`, `= ${fd(sum)}`) +
+      `<div class="spc"></div>` +
+      `<div class="ln"><span class="lbl">d(A,B)</span><span class="eq">=</span>` +
+      `<span class="val">√ ${fd(sum)}</span><span class="eq">=</span>` +
+      `<span class="fin">${fd(d)}</span></div>`
+    )
+  ].join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PROCESO PERÍMETRO
+// ══════════════════════════════════════════════════════════════
+function procPeri(ax,ay,bx,by,cx,cy){
+  const AB=dist(ax.v,ay.v,bx.v,by.v);
+  const BC=dist(bx.v,by.v,cx.v,cy.v);
+  const CA=dist(cx.v,cy.v,ax.v,ay.v);
+
+  const sideBlock = (name, p1x,p1y,p2x,p2y, d) => {
+    const ddx=p2x.v-p1x.v, ddy=p2y.v-p1y.v;
+    return `<div class="ln" style="color:var(--text-faint);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">── ${name} ──</div>` +
+      ln('Δx','=',`${fd(p2x.v)} − (${fd(p1x.v)})`,`= ${fd(ddx)}`) +
+      ln('Δy','=',`${fd(p2y.v)} − (${fd(p1y.v)})`,`= ${fd(ddy)}`) +
+      `<div class="ln"><span class="lbl">${name}</span><span class="eq">=</span>` +
+      `<span class="val">√(${fd(ddx)}²+${fd(ddy)}²)</span><span class="eq">=</span>` +
+      `<span class="val">${fd(d)}</span></div><div class="spc"></div>`;
+  };
+
+  return [
+    step(1,'Vértices del triángulo',
+      ln('A','=',`(${ax.sym}, ${ay.sym})`,`(${fd(ax.v)}, ${fd(ay.v)})`) +
+      ln('B','=',`(${bx.sym}, ${by.sym})`,`(${fd(bx.v)}, ${fd(by.v)})`) +
+      ln('C','=',`(${cx.sym}, ${cy.sym})`,`(${fd(cx.v)}, ${fd(cy.v)})`)
+    ),
+    step(2,'Longitud de cada lado  d = √[(Δx)²+(Δy)²]',
+      sideBlock('AB',ax,ay,bx,by,AB)+
+      sideBlock('BC',bx,by,cx,cy,BC)+
+      sideBlock('CA',cx,cy,ax,ay,CA)
+    ),
+    step(3,'Perímetro = AB + BC + CA',
+      ln('P','=',`${fd(AB)} + ${fd(BC)} + ${fd(CA)}`) +
+      `<div class="spc"></div>` +
+      `<div class="ln"><span class="lbl">P</span><span class="eq">=</span><span class="fin">${fd(AB+BC+CA)}</span></div>`
+    )
+  ].join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PROCESO ISÓSCELES
+// ══════════════════════════════════════════════════════════════
+function procIso(ax,ay,bx,by,cx,cy){
+  const AB=dist(ax.v,ay.v,bx.v,by.v);
+  const BC=dist(bx.v,by.v,cx.v,cy.v);
+  const CA=dist(cx.v,cy.v,ax.v,ay.v);
+  const eps=1e-4;
+  const e1=Math.abs(AB-BC)<eps, e2=Math.abs(BC-CA)<eps, e3=Math.abs(CA-AB)<eps;
+  const iso=e1||e2||e3;
+
+  const cmp=(l1,v1,l2,v2,eq)=>
+    `<div class="ln"><span class="lbl">${l1} vs ${l2}</span>` +
+    `<span class="val">${fd(v1)}</span><span class="eq">↔</span><span class="val">${fd(v2)}</span>` +
+    `<span class="${eq?'verdict-yes':'verdict-no'}">&nbsp;${eq?'✓ Igual':'✗ Distinto'}</span></div>`;
+
+  const conds = [e1?'AB = BC':'', e2?'BC = CA':'', e3?'CA = AB':''].filter(Boolean);
+
+  return [
+    step(1,'Calcular los tres lados',
+      ln('AB','=',`√[(${fd(bx.v-ax.v)})²+(${fd(by.v-ay.v)})²]`,`= ${fd(AB)}`) +
+      ln('BC','=',`√[(${fd(cx.v-bx.v)})²+(${fd(cy.v-by.v)})²]`,`= ${fd(BC)}`) +
+      ln('CA','=',`√[(${fd(ax.v-cx.v)})²+(${fd(ay.v-cy.v)})²]`,`= ${fd(CA)}`)
+    ),
+    step(2,'Comparar pares de lados',
+      cmp('AB',AB,'BC',BC,e1)+cmp('BC',BC,'CA',CA,e2)+cmp('CA',CA,'AB',AB,e3)
+    ),
+    step(3,'Conclusión',
+      `<div class="ln"><span class="lbl">Resultado</span>` +
+      `<span class="${iso?'verdict-yes':'verdict-no'}">${iso?'✓ SÍ es isósceles':'✗ NO es isósceles'}</span></div>` +
+      (iso ? `<div class="ln"><span class="dim">Condición cumplida: ${conds.join(' · ')}</span></div>` :
+             `<div class="ln"><span class="dim">Ningún par de lados es igual.</span></div>`)
+    )
+  ].join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PROCESO EQUILÁTERO
+// ══════════════════════════════════════════════════════════════
+function procEqui(ax,ay,bx,by,cx,cy){
+  const AB=dist(ax.v,ay.v,bx.v,by.v);
+  const BC=dist(bx.v,by.v,cx.v,cy.v);
+  const CA=dist(cx.v,cy.v,ax.v,ay.v);
+  const eps=1e-4;
+  const e1=Math.abs(AB-BC)<eps, e2=Math.abs(BC-CA)<eps;
+  const equi=e1&&e2;
+
+  const cmp=(l1,v1,l2,v2,eq)=>
+    `<div class="ln"><span class="lbl">${l1} vs ${l2}</span>` +
+    `<span class="val">${fd(v1)}</span><span class="eq">↔</span><span class="val">${fd(v2)}</span>` +
+    `<span class="${eq?'verdict-yes':'verdict-no'}">&nbsp;${eq?'✓ Igual':'✗ Distinto'}</span></div>`;
+
+  return [
+    step(1,'Calcular los tres lados',
+      ln('AB','=',`√[(${fd(bx.v-ax.v)})²+(${fd(by.v-ay.v)})²]`,`= ${fd(AB)}`) +
+      ln('BC','=',`√[(${fd(cx.v-bx.v)})²+(${fd(cy.v-by.v)})²]`,`= ${fd(BC)}`) +
+      ln('CA','=',`√[(${fd(ax.v-cx.v)})²+(${fd(ay.v-cy.v)})²]`,`= ${fd(CA)}`)
+    ),
+    step(2,'Comparar los tres pares',
+      cmp('AB',AB,'BC',BC,e1)+cmp('BC',BC,'CA',CA,e2)+cmp('CA',CA,'AB',AB,Math.abs(CA-AB)<eps)
+    ),
+    step(3,'Conclusión',
+      `<div class="ln"><span class="lbl">Resultado</span>` +
+      `<span class="${equi?'verdict-yes':'verdict-no'}">${equi?'✓ SÍ es equilátero':'✗ NO es equilátero'}</span></div>` +
+      (equi
+        ? `<div class="ln"><span class="dim">AB = BC = CA = ${fd(AB)}</span></div>`
+        : `<div class="ln"><span class="dim">No todos los lados son iguales.</span></div>`)
+    )
+  ].join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PROCESO ESCALENO
+// ══════════════════════════════════════════════════════════════
+function procEsc(ax,ay,bx,by,cx,cy){
+  const AB=dist(ax.v,ay.v,bx.v,by.v);
+  const BC=dist(bx.v,by.v,cx.v,cy.v);
+  const CA=dist(cx.v,cy.v,ax.v,ay.v);
+  const eps=1e-4;
+  const d1=Math.abs(AB-BC)>=eps, d2=Math.abs(BC-CA)>=eps, d3=Math.abs(CA-AB)>=eps;
+  const esc=d1&&d2&&d3;
+
+  const cmp=(l1,v1,l2,v2,distinto)=>
+    `<div class="ln"><span class="lbl">${l1} vs ${l2}</span>` +
+    `<span class="val">${fd(v1)}</span><span class="eq">↔</span><span class="val">${fd(v2)}</span>` +
+    `<span class="${distinto?'verdict-yes':'verdict-no'}">&nbsp;${distinto?'✓ Distinto':'✗ Igual'}</span></div>`;
+
+  return [
+    step(1,'Calcular los tres lados',
+      ln('AB','=',`√[(${fd(bx.v-ax.v)})²+(${fd(by.v-ay.v)})²]`,`= ${fd(AB)}`) +
+      ln('BC','=',`√[(${fd(cx.v-bx.v)})²+(${fd(cy.v-by.v)})²]`,`= ${fd(BC)}`) +
+      ln('CA','=',`√[(${fd(ax.v-cx.v)})²+(${fd(ay.v-cy.v)})²]`,`= ${fd(CA)}`)
+    ),
+    step(2,'Verificar que ningún par es igual',
+      cmp('AB',AB,'BC',BC,d1)+cmp('BC',BC,'CA',CA,d2)+cmp('CA',CA,'AB',AB,d3)
+    ),
+    step(3,'Conclusión',
+      `<div class="ln"><span class="lbl">Resultado</span>` +
+      `<span class="${esc?'verdict-yes':'verdict-no'}">${esc?'✓ SÍ es escaleno':'✗ NO es escaleno'}</span></div>` +
+      (esc
+        ? `<div class="ln"><span class="dim">Los tres lados son distintos entre sí.</span></div>`
+        : `<div class="ln"><span class="dim">Al menos dos lados son iguales.</span></div>`)
+    )
+  ].join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CALC FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+function calcEquilatero(){
+  const ax=ri('eq_ax'),ay=ri('eq_ay'),bx=ri('eq_bx'),by=ri('eq_by'),cx=ri('eq_cx'),cy=ri('eq_cy');
+  if(!ax||!ay||!bx||!by||!cx||!cy){ drawGraph(); return; }
+  const AB=dist(ax.v,ay.v,bx.v,by.v), BC=dist(bx.v,by.v,cx.v,cy.v), CA=dist(cx.v,cy.v,ax.v,ay.v);
+  const eps=1e-4;
+  const equi=Math.abs(AB-BC)<eps && Math.abs(BC-CA)<eps;
+
+  document.getElementById('eq_ab').textContent=fd(AB);
+  document.getElementById('eq_bc').textContent=fd(BC);
+  document.getElementById('eq_ca').textContent=fd(CA);
+  document.getElementById('eq_res').innerHTML=equi
+    ?'<span class="badge yes">✓ Sí es equilátero</span>'
+    :'<span class="badge no">✗ No es equilátero</span>';
+  document.getElementById('proc-eq').innerHTML=procEqui(ax,ay,bx,by,cx,cy);
+  drawGraph();
+}
+
+function calcEscaleno(){
+  const ax=ri('es_ax'),ay=ri('es_ay'),bx=ri('es_bx'),by=ri('es_by'),cx=ri('es_cx'),cy=ri('es_cy');
+  if(!ax||!ay||!bx||!by||!cx||!cy){ drawGraph(); return; }
+  const AB=dist(ax.v,ay.v,bx.v,by.v), BC=dist(bx.v,by.v,cx.v,cy.v), CA=dist(cx.v,cy.v,ax.v,ay.v);
+  const eps=1e-4;
+  const d1=Math.abs(AB-BC)>=eps, d2=Math.abs(BC-CA)>=eps, d3=Math.abs(CA-AB)>=eps;
+  const esc=d1&&d2&&d3;
+  const distintos=[d1?'AB≠BC':'',d2?'BC≠CA':'',d3?'CA≠AB':''].filter(Boolean);
+
+  document.getElementById('es_ab').textContent=fd(AB);
+  document.getElementById('es_bc').textContent=fd(BC);
+  document.getElementById('es_ca').textContent=fd(CA);
+  document.getElementById('es_distintos').textContent=distintos.join(' · ')||'—';
+  document.getElementById('es_res').innerHTML=esc
+    ?'<span class="badge yes">✓ Sí es escaleno</span>'
+    :'<span class="badge no">✗ No es escaleno</span>';
+  document.getElementById('proc-es').innerHTML=procEsc(ax,ay,bx,by,cx,cy);
+  drawGraph();
+}
+
+function calcDistancia(){
+  const ax=ri('d_ax'),ay=ri('d_ay'),bx=ri('d_bx'),by=ri('d_by');
+  if(!ax||!ay||!bx||!by){ document.getElementById('d_res').textContent='—'; drawGraph(); return; }
+  const d=dist(ax.v,ay.v,bx.v,by.v);
+
+  document.getElementById('d_sym_a').textContent=`(${ax.sym}, ${ay.sym})`;
+  document.getElementById('d_dec_a').textContent=`(${fd(ax.v)}, ${fd(ay.v)})`;
+  document.getElementById('d_sym_b').textContent=`(${bx.sym}, ${by.sym})`;
+  document.getElementById('d_dec_b').textContent=`(${fd(bx.v)}, ${fd(by.v)})`;
+  document.getElementById('d_res').textContent=fd(d);
+
+  document.getElementById('proc-d').innerHTML=procDist(ax,ay,bx,by);
+  drawGraph();
+}
+
+function calcPerimetro(){
+  const ax=ri('p_ax'),ay=ri('p_ay'),bx=ri('p_bx'),by=ri('p_by'),cx=ri('p_cx'),cy=ri('p_cy');
+  if(!ax||!ay||!bx||!by||!cx||!cy){ drawGraph(); return; }
+  const AB=dist(ax.v,ay.v,bx.v,by.v), BC=dist(bx.v,by.v,cx.v,cy.v), CA=dist(cx.v,cy.v,ax.v,ay.v);
+
+  document.getElementById('p_ab').textContent=fd(AB);
+  document.getElementById('p_bc').textContent=fd(BC);
+  document.getElementById('p_ca').textContent=fd(CA);
+  document.getElementById('p_res').textContent=fd(AB+BC+CA);
+  document.getElementById('proc-p').innerHTML=procPeri(ax,ay,bx,by,cx,cy);
+  drawGraph();
+}
+
+function calcIsoceles(){
+  const ax=ri('i_ax'),ay=ri('i_ay'),bx=ri('i_bx'),by=ri('i_by'),cx=ri('i_cx'),cy=ri('i_cy');
+  if(!ax||!ay||!bx||!by||!cx||!cy){ drawGraph(); return; }
+  const AB=dist(ax.v,ay.v,bx.v,by.v), BC=dist(bx.v,by.v,cx.v,cy.v), CA=dist(cx.v,cy.v,ax.v,ay.v);
+  const eps=1e-4;
+  const e1=Math.abs(AB-BC)<eps, e2=Math.abs(BC-CA)<eps, e3=Math.abs(CA-AB)<eps;
+  const iso=e1||e2||e3;
+  const igual=[e1?'AB=BC':'',e2?'BC=CA':'',e3?'CA=AB':''].filter(Boolean);
+
+  document.getElementById('i_ab').textContent=fd(AB);
+  document.getElementById('i_bc').textContent=fd(BC);
+  document.getElementById('i_ca').textContent=fd(CA);
+  document.getElementById('i_iguales').textContent=igual.join(' · ')||'—';
+  document.getElementById('i_res').innerHTML=iso
+    ?'<span class="badge yes">✓ Sí es isósceles</span>'
+    :'<span class="badge no">✗ No es isósceles</span>';
+  document.getElementById('proc-i').innerHTML=procIso(ax,ay,bx,by,cx,cy);
+  drawGraph();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CANVAS
+// ══════════════════════════════════════════════════════════════
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+function resizeCv(){
+  const pr=cv.parentElement, hh=pr.querySelector('.graph-hd').offsetHeight;
+  const r=pr.getBoundingClientRect();
+  cv.width =r.width *devicePixelRatio;
+  cv.height=(r.height-hh)*devicePixelRatio;
+  cv.style.width =r.width+'px';
+  cv.style.height=(r.height-hh)+'px';
+  drawGraph();
+}
+
+function pts(){
+  const g=(id)=>{ const p=ri(id); return p?p.v:NaN; };
+  const gp=(id)=>ri(id);
+  if(tab==='distancia') return [
+    {x:g('d_ax'),y:g('d_ay'),label:'A',color:'#2d5be3',sym:{x:gp('d_ax'),y:gp('d_ay')}},
+    {x:g('d_bx'),y:g('d_by'),label:'B',color:'#c0392b',sym:{x:gp('d_bx'),y:gp('d_by')}},
+  ];
+  if(tab==='perimetro') return [
+    {x:g('p_ax'),y:g('p_ay'),label:'A',color:'#2d5be3'},
+    {x:g('p_bx'),y:g('p_by'),label:'B',color:'#c0392b'},
+    {x:g('p_cx'),y:g('p_cy'),label:'C',color:'#1a6b3a'},
+  ];
+  if(tab==='equilatero') return [
+    {x:g('eq_ax'),y:g('eq_ay'),label:'A',color:'#2d5be3'},
+    {x:g('eq_bx'),y:g('eq_by'),label:'B',color:'#c0392b'},
+    {x:g('eq_cx'),y:g('eq_cy'),label:'C',color:'#1a6b3a'},
+  ];
+  if(tab==='escaleno') return [
+    {x:g('es_ax'),y:g('es_ay'),label:'A',color:'#2d5be3'},
+    {x:g('es_bx'),y:g('es_by'),label:'B',color:'#c0392b'},
+    {x:g('es_cx'),y:g('es_cy'),label:'C',color:'#1a6b3a'},
+  ];
+  return [
+    {x:g('i_ax'),y:g('i_ay'),label:'A',color:'#2d5be3'},
+    {x:g('i_bx'),y:g('i_by'),label:'B',color:'#c0392b'},
+    {x:g('i_cx'),y:g('i_cy'),label:'C',color:'#1a6b3a'},
+  ];
+}
+
+function niceStep(r){
+  if(!r||r<=0)return 1;
+  const p=Math.pow(10,Math.floor(Math.log10(r))), q=r/p;
+  if(q<1.5)return p; if(q<3.5)return 2*p; if(q<7.5)return 5*p; return 10*p;
+}
+
+function drawGraph(){
+  const W=cv.width,H=cv.height,dpr=devicePixelRatio;
+  ctx.clearRect(0,0,W,H);
+  const PP=pts().filter(p=>!isNaN(p.x)&&!isNaN(p.y));
+  if(!PP.length)return;
+
+  const xs=PP.map(p=>p.x),ys=PP.map(p=>p.y);
+  const minX=Math.min(...xs),maxX=Math.max(...xs);
+  const minY=Math.min(...ys),maxY=Math.max(...ys);
+
+  const pad=70*dpr;
+  const span=Math.max(maxX-minX,maxY-minY,2);
+  const extra=span*0.5;
+  const rX=Math.max(maxX-minX+extra,4), rY=Math.max(maxY-minY+extra,4);
+  const cX=(minX+maxX)/2,cY=(minY+maxY)/2;
+  const sc=Math.min((W-pad*2)/rX,(H-pad*2)/rY);
+
+  const S=(wx,wy)=>({x:W/2+(wx-cX)*sc, y:H/2-(wy-cY)*sc});
+
+  const gs=niceStep(rX/5);
+  const x0=Math.floor((cX-W/(2*sc))/gs)*gs, x1=Math.ceil((cX+W/(2*sc))/gs)*gs;
+  const y0=Math.floor((cY-H/(2*sc))/gs)*gs, y1=Math.ceil((cY+H/(2*sc))/gs)*gs;
+
+  // grid
+  ctx.strokeStyle='#eeeeeb'; ctx.lineWidth=1*dpr;
+  for(let gx=x0;gx<=x1;gx+=gs){const s=S(gx,0);ctx.beginPath();ctx.moveTo(s.x,0);ctx.lineTo(s.x,H);ctx.stroke();}
+  for(let gy=y0;gy<=y1;gy+=gs){const s=S(0,gy);ctx.beginPath();ctx.moveTo(0,s.y);ctx.lineTo(W,s.y);ctx.stroke();}
+
+  // axis labels
+  ctx.fillStyle='#c0c0b2';ctx.font=`${9*dpr}px "DM Mono",monospace`;
+  ctx.textAlign='center';
+  for(let gx=x0;gx<=x1;gx+=gs){
+    if(Math.abs(gx)<gs*0.01)continue;
+    const s=S(gx,0);
+    const ly=Math.min(Math.max(s.y+13*dpr,11*dpr),H-4*dpr);
+    ctx.fillText(fmtAxis(gx),s.x,ly);
+  }
+  ctx.textAlign='right';
+  for(let gy=y0;gy<=y1;gy+=gs){
+    if(Math.abs(gy)<gs*0.01)continue;
+    const s=S(0,gy);
+    const lx=Math.min(Math.max(s.x-5*dpr,22*dpr),W-6*dpr);
+    ctx.fillText(fmtAxis(gy),lx,s.y+3.5*dpr);
+  }
+
+  // axes
+  const O=S(0,0);
+  ctx.strokeStyle='#b8b8a8'; ctx.lineWidth=1.5*dpr;
+  ctx.beginPath();ctx.moveTo(0,O.y);ctx.lineTo(W,O.y);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(O.x,0);ctx.lineTo(O.x,H);ctx.stroke();
+  ctx.fillStyle='#c8c8b8';ctx.font=`${9*dpr}px "DM Mono",monospace`;ctx.textAlign='left';
+  ctx.fillText('O',O.x+5*dpr,O.y-5*dpr);
+
+  // shape
+  if(PP.length>=2){
+    const sp=PP.map(p=>S(p.x,p.y));
+    ctx.beginPath();ctx.moveTo(sp[0].x,sp[0].y);
+    for(let i=1;i<sp.length;i++)ctx.lineTo(sp[i].x,sp[i].y);
+    if(PP.length===3)ctx.closePath();
+    if(PP.length===3){ctx.fillStyle='rgba(45,91,227,0.04)';ctx.fill();}
+    ctx.strokeStyle='#d4d4cc';ctx.lineWidth=1.5*dpr;
+    ctx.setLineDash([4*dpr,4*dpr]);ctx.stroke();ctx.setLineDash([]);
+
+    if(PP.length===2){
+      const mx=(sp[0].x+sp[1].x)/2,my=(sp[0].y+sp[1].y)/2;
+      ctx.fillStyle='#eaeae6';ctx.beginPath();ctx.arc(mx,my,3.5*dpr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#c0c0b8';ctx.lineWidth=1*dpr;ctx.stroke();
+    }
+  }
+
+  // points
+  PP.forEach(p=>{
+    const s=S(p.x,p.y);
+    ctx.beginPath();ctx.arc(s.x,s.y,9*dpr,0,Math.PI*2);
+    ctx.fillStyle=p.color+'14';ctx.fill();
+
+    ctx.beginPath();ctx.arc(s.x,s.y,4.5*dpr,0,Math.PI*2);
+    ctx.fillStyle=p.color;ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2*dpr;ctx.stroke();
+
+    ctx.fillStyle=p.color;
+    ctx.font=`bold ${11*dpr}px "DM Mono",monospace`;
+    ctx.textAlign='center';
+    ctx.fillText(p.label,s.x,s.y-15*dpr);
+
+    // sym label if available (uses original expression)
+    const symLabel = p.sym
+      ? `(${p.sym.x?p.sym.x.sym:fmtAxis(p.x)}, ${p.sym.y?p.sym.y.sym:fmtAxis(p.y)})`
+      : `(${fmtAxis(p.x)}, ${fmtAxis(p.y)})`;
+    ctx.fillStyle='#aaa8a0';
+    ctx.font=`${8*dpr}px "DM Mono",monospace`;
+    ctx.fillText(symLabel,s.x,s.y-27*dpr);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+// Inicializar panels como ocultos
+document.querySelectorAll('.proc-panel').forEach(p=>p.style.display='none');
+
+window.addEventListener('resize',resizeCv);
+resizeCv();
+calcDistancia();
+calcPerimetro();
+calcIsoceles();
+calcEquilatero();
+calcEscaleno();
+</script>
+</body>
+</html>
